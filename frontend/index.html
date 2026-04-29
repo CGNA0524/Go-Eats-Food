@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Go Eats Food | Restaurant Management System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div class="app-shell" id="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand-block">
+        <div class="brand-mark">GE</div>
+        <div>
+          <div class="brand-title">Go Eats Food</div>
+          <div class="brand-subtitle">Restaurant OS</div>
+        </div>
+      </div>
+      <div class="sidebar-status">
+        <span class="status-dot"></span>
+        Live operations online
+      </div>
+      <nav class="nav" id="nav"></nav>
+      <div class="sidebar-footer">
+        <div class="footer-chip">Role: <span id="current-role">Admin</span></div>
+        <div class="footer-chip subtle">15-table floor plan</div>
+      </div>
+    </aside>
+
+    <div class="main-shell">
+      <header class="topbar">
+        <button class="icon-button mobile-only" id="sidebar-toggle" aria-label="Toggle sidebar">☰</button>
+        <div>
+          <div class="page-title" id="page-title">Dashboard</div>
+          <div class="page-subtitle" id="page-subtitle">Live order, table, billing and inventory control</div>
+        </div>
+        <div class="topbar-right">
+          <div class="clock-pill" id="live-clock">--:--:--</div>
+          <div class="alert-pill" id="alert-pill">0 alerts</div>
+          <div class="avatar-pill">AK</div>
+        </div>
+      </header>
+
+      <main class="content-grid">
+        <section class="content-panel main-panel" id="view-root"></section>
+        <aside class="content-panel side-panel" id="detail-panel"></aside>
+      </main>
+    </div>
+  </div>
+
+  <div id="modal-root"></div>
+  <script type="module" src="./dashboard.js"></script>
+</body>
+</html>
