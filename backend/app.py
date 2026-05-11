@@ -4,22 +4,31 @@ import os
 
 from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
-import sys
-import os
 
-# Add backend to path for imports
-sys.path.insert(0, os.path.dirname(__file__))
-
-from bootstrap import seed_if_empty
-from db import Base, DATABASE_URL, engine, session_scope
-from routes.admin import admin_bp
-from routes.auth import auth_bp
-from routes.catalog import catalog_bp
-from routes.billing import billing_bp
-from routes.inventory import inventory_bp
-from routes.orders import orders_bp
-from routes.reports import reports_bp
-from routes.tables import tables_bp
+try:
+    # For gunicorn module loading (backend.app:app)
+    from .bootstrap import seed_if_empty
+    from .db import Base, DATABASE_URL, engine, session_scope
+    from .routes.admin import admin_bp
+    from .routes.auth import auth_bp
+    from .routes.catalog import catalog_bp
+    from .routes.billing import billing_bp
+    from .routes.inventory import inventory_bp
+    from .routes.orders import orders_bp
+    from .routes.reports import reports_bp
+    from .routes.tables import tables_bp
+except ImportError:
+    # For direct script execution
+    from bootstrap import seed_if_empty
+    from db import Base, DATABASE_URL, engine, session_scope
+    from routes.admin import admin_bp
+    from routes.auth import auth_bp
+    from routes.catalog import catalog_bp
+    from routes.billing import billing_bp
+    from routes.inventory import inventory_bp
+    from routes.orders import orders_bp
+    from routes.reports import reports_bp
+    from routes.tables import tables_bp
 
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))

@@ -3,8 +3,12 @@ from __future__ import annotations
 from flask import Blueprint, request
 
 from auth import require_roles
-from db import session_scope
-from models import Bill, DiningTable, Order, Staff
+try:
+    from ..db import session_scope
+    from ..models import Bill, DiningTable, Order, Staff
+except ImportError:
+    from db import session_scope
+    from models import Bill, DiningTable, Order, Staff
 from routes import json_response
 from services import calculate_bill_breakdown
 

@@ -5,8 +5,12 @@ from datetime import datetime, timedelta
 from flask import Blueprint, request
 from sqlalchemy import extract, func
 
-from db import session_scope
-from models import Bill, MenuItem, Order, OrderItem
+try:
+    from ..db import session_scope
+    from ..models import Bill, MenuItem, Order, OrderItem
+except ImportError:
+    from db import session_scope
+    from models import Bill, MenuItem, Order, OrderItem
 from routes import json_response
 
 

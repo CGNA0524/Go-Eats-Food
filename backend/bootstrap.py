@@ -5,7 +5,10 @@ from datetime import datetime, timedelta
 from sqlalchemy import func
 from werkzeug.security import generate_password_hash
 
-from models import Bill, Category, DiningTable, Inventory, InventoryLog, MenuItem, Order, OrderItem, Recipe, Reservation, Staff, Supplier, User
+try:
+    from .models import Bill, Category, DiningTable, Inventory, InventoryLog, MenuItem, Order, OrderItem, Recipe, Reservation, Staff, Supplier, User
+except ImportError:
+    from models import Bill, Category, DiningTable, Inventory, InventoryLog, MenuItem, Order, OrderItem, Recipe, Reservation, Staff, Supplier, User
 
 
 def seed_sample_data(session):

@@ -5,8 +5,12 @@ from datetime import datetime
 from flask import Blueprint, request
 
 from auth import require_roles
-from db import session_scope
-from models import Inventory, InventoryLog, Staff
+try:
+    from ..db import session_scope
+    from ..models import Inventory, InventoryLog, Staff
+except ImportError:
+    from db import session_scope
+    from models import Inventory, InventoryLog, Staff
 from routes import json_response
 
 

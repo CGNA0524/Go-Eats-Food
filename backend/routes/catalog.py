@@ -2,8 +2,12 @@ from __future__ import annotations
 
 from flask import Blueprint
 
-from db import session_scope
-from models import Category, MenuItem, Staff, Supplier
+try:
+    from ..db import session_scope
+    from ..models import Category, MenuItem, Staff, Supplier
+except ImportError:
+    from db import session_scope
+    from models import Category, MenuItem, Staff, Supplier
 from routes import json_response
 
 

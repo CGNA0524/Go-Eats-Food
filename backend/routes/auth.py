@@ -7,8 +7,12 @@ from functools import wraps
 from flask import Blueprint, jsonify, request
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from db import session_scope
-from models import User
+try:
+    from ..db import session_scope
+    from ..models import User
+except ImportError:
+    from db import session_scope
+    from models import User
 
 auth_bp = Blueprint("auth", __name__, url_prefix="/api/auth")
 
