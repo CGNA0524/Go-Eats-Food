@@ -4,6 +4,11 @@ import os
 
 from flask import Flask, jsonify, send_from_directory
 from flask_cors import CORS
+import sys
+import os
+
+# Add backend to path for imports
+sys.path.insert(0, os.path.dirname(__file__))
 
 from bootstrap import seed_if_empty
 from db import Base, DATABASE_URL, engine, session_scope
