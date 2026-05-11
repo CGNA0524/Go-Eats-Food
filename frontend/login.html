@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Go Eats Food | Login</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css" />
+  <style>
+    .auth-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--bg-darker) 0%, #1a1a2e 100%);
+      padding: 20px;
+    }
+
+    .auth-card {
+      background: var(--bg-panel);
+      border: var(--border);
+      border-radius: 20px;
+      padding: 48px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .auth-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .auth-logo {
+      width: 64px;
+      height: 64px;
+      background: var(--accent);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      font-weight: 800;
+      color: white;
+      margin: 0 auto 24px;
+      font-family: 'Syne', sans-serif;
+    }
+
+    .auth-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+      font-family: 'Syne', sans-serif;
+    }
+
+    .auth-subtitle {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .form-group {
+      margin-bottom: 24px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      color: var(--text);
+      font-size: 14px;
+      font-family: inherit;
+      transition: all 160ms ease;
+    }
+
+    .form-input:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 0 0 3px rgba(255, 107, 43, 0.1);
+    }
+
+    .form-input::placeholder {
+      color: rgba(255, 255, 255, 0.3);
+    }
+
+    .submit-button {
+      width: 100%;
+      padding: 14px;
+      background: var(--accent);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 160ms ease;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .submit-button:hover {
+      background: #ff7a3f;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(255, 107, 43, 0.3);
+    }
+
+    .submit-button:active {
+      transform: translateY(0);
+    }
+
+    .submit-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .form-divider {
+      margin: 32px 0;
+      text-align: center;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .form-divider::before {
+      content: '';
+      display: block;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+      margin-bottom: 16px;
+    }
+
+    .form-divider::after {
+      content: '';
+      display: block;
+      height: 1px;
+      background: rgba(255, 255, 255, 0.08);
+      margin-top: 16px;
+    }
+
+    .auth-link {
+      display: block;
+      text-align: center;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      transition: color 160ms ease;
+    }
+
+    .auth-link:hover {
+      color: #ff7a3f;
+    }
+
+    .error-message {
+      background: rgba(255, 67, 67, 0.1);
+      border: 1px solid rgba(255, 67, 67, 0.3);
+      color: #ff6b6b;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 24px;
+      display: none;
+    }
+
+    .error-message.show {
+      display: block;
+    }
+
+    .success-message {
+      background: rgba(76, 175, 80, 0.1);
+      border: 1px solid rgba(76, 175, 80, 0.3);
+      color: #4caf50;
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 24px;
+      display: none;
+    }
+
+    .success-message.show {
+      display: block;
+    }
+
+    .loading-spinner {
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .demo-credentials {
+      background: rgba(255, 107, 43, 0.1);
+      border: 1px solid rgba(255, 107, 43, 0.3);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      margin-top: 24px;
+      color: var(--muted);
+    }
+
+    .demo-credentials p {
+      margin: 4px 0;
+    }
+
+    .demo-credentials strong {
+      color: var(--accent);
+    }
+  </style>
+</head>
+<body>
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="auth-logo">GE</div>
+        <h1 class="auth-title">Go Eats Food</h1>
+        <p class="auth-subtitle">Restaurant Management System</p>
+      </div>
+
+      <div id="error-message" class="error-message"></div>
+      <div id="success-message" class="success-message"></div>
+
+      <!-- Login Form -->
+      <form id="login-form" style="display: none;">
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="login-email" class="form-input" placeholder="admin@goeats.com" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="login-password" class="form-input" placeholder="••••••••" required>
+        </div>
+
+        <button type="submit" class="submit-button" id="login-submit">Sign In</button>
+
+        <div class="form-divider">New to Go Eats?</div>
+
+        <a href="#" class="auth-link" id="switch-to-signup">Create Account</a>
+
+        <div class="demo-credentials">
+          <p><strong>Demo Account:</strong></p>
+          <p>Email: admin@goeats.com</p>
+          <p>Password: admin123</p>
+        </div>
+      </form>
+
+      <!-- Signup Form -->
+      <form id="signup-form" style="display: none;">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" id="signup-name" class="form-input" placeholder="Your name" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="signup-email" class="form-input" placeholder="your@email.com" required>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" id="signup-password" class="form-input" placeholder="At least 6 characters" required minlength="6">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Confirm Password</label>
+          <input type="password" id="signup-confirm" class="form-input" placeholder="Confirm password" required>
+        </div>
+
+        <button type="submit" class="submit-button" id="signup-submit">Create Account</button>
+
+        <div class="form-divider">Already have an account?</div>
+
+        <a href="#" class="auth-link" id="switch-to-login">Sign In</a>
+      </form>
+    </div>
+  </div>
+
+  <script type="module" src="./auth.js"></script>
+</body>
+</html>

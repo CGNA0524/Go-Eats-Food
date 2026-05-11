@@ -9,6 +9,21 @@ from db import Base
 
 
 ORDER_STATUSES = ("pending", "cooking", "ready", "served", "billed")
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    user_id = Column(Integer, primary_key=True)
+    email = Column(String(160), nullable=False, unique=True, index=True)
+    password_hash = Column(String(255), nullable=False)
+    name = Column(String(160), nullable=False)
+    role = Column(String(50), nullable=False, default="admin")
+    is_active = Column(Boolean, nullable=False, default=True)
+    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)
+
+
 TABLE_STATUSES = ("available", "occupied", "reserved")
 RESERVATION_STATUSES = ("reserved", "seated", "cancelled", "completed")
 PAYMENT_MODES = ("Cash", "UPI", "Card", "Split")

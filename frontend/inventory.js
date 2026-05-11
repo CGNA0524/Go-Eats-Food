@@ -14,9 +14,9 @@ export function renderInventorySection(state) {
       <div class="section-header">
         <div>
           <h2 class="section-title">Inventory Management</h2>
-          <div class="section-kicker">Track low stock, restock items and export operational snapshots.</div>
+          <div class="section-kicker">Track low stock, restock items and manage your inventory live.</div>
         </div>
-        <button class="button secondary" data-action="export-inventory">Export CSV</button>
+        <button class="button secondary" data-action="open-add-inventory">Add Item</button>
       </div>
 
       <div class="toolbar">
@@ -45,14 +45,17 @@ export function renderInventorySection(state) {
                     <div class="row-top">
                       <div>
                         <div class="card-title">${item.name}</div>
-                        <div class="card-subtitle">${item.category} · Restocked ${item.last_restocked ? formatDate(item.last_restocked) : 'recently'}</div>
+                        <div class="card-subtitle">${item.category} · ${item.unit} · ₹${Number(item.cost_per_unit).toFixed(2)}/unit</div>
                       </div>
                       <span class="status-chip ${toneClass(item.stock_status)}">${item.stock_status}</span>
                     </div>
                     <div class="detail-row"><span class="muted">Quantity</span><strong>${item.quantity}${item.unit}</strong></div>
+                    <div class="detail-row"><span class="muted">Min Threshold</span><strong>${item.min_threshold}${item.unit}</strong></div>
                     <div class="stock-bar"><div class="stock-fill ${stockTone(item.stock_status)}" style="width:${stockPercent(item)}%"></div></div>
                     <div class="toolbar">
                       <button class="button secondary" data-action="restock-item" data-inventory-id="${item.inventory_id}">Restock</button>
+                      <button class="button ghost" data-action="edit-inventory" data-inventory-id="${item.inventory_id}">Edit</button>
+                      <button class="button ghost" data-action="delete-inventory" data-inventory-id="${item.inventory_id}" style="color: #ff6b6b;">Delete</button>
                     </div>
                   </div>
                 `,

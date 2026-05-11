@@ -9,14 +9,25 @@ export const API_BASE = (() => {
 })();
 
 export async function request(path, options = {}) {
+  const token = localStorage.getItem('token');
   const response = await fetch(`${API_BASE}${path}`, {
     headers: {
       'Content-Type': 'application/json',
+      ...(token && { 'Authorization': `Bearer ${token}` }),
       ...(options.headers || {}),
     },
     ...options,
   });
   const payload = await response.json().catch(() => ({}));
+  
+  // Handle token expiration
+  if (response.status === 401) {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    window.location.href = '/login.html';
+    throw new Error('Session expired. Please login again.');
+  }
+  
   if (!response.ok) {
     throw new Error(payload.error || `Request failed: ${response.status}`);
   }

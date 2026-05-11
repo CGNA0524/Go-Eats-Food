@@ -120,3 +120,118 @@ def inventory_logs():
             )
     except Exception as exc:
         return json_response({"error": str(exc)}, 500)
+
+
+@inventory_bp.post("/api/inventory")
+@require_roles("admin")
+def create_inventory():
+    try:
+        payload = request.get_json(force=True)
+        name = payload.get("name", "").strip()
+        category = payload.get("category", "").strip()
+        quantity = float(payload.get("quantity", 0))
+        unit = payload.get("unit", "").strip()
+        min_threshold = float(payload.get("min_threshold", 0))
+        cost_per_unit = float(payload.get("cost_per_unit", 0))
+        supplier_id = payload.get("supplier_id")
+
+        if not all([name, category, unit]):
+            return json_response({"error": "name, category and unit are required"}, 400)
+
+        with session_scope() as session:
+            item = Inventory(
+                name=name,
+                category=category,
+                quantity=quantity,
+                unit=unit,
+                min_threshold=min_threshold,
+                cost_per_unit=cost_per_unit,
+                supplier_id=supplier_id,
+                last_restocked=datetime.utcnow(),
+            )
+            session.add(item)
+            session.flush()
+            return json_response({"data": {"inventory_id": item.inventory_id}}, 201)
+    except Exception as exc:
+        return json_response({"error": str(exc)}, 500)
+
+
+@inventory_bp.put("/api/inventory/<int:inventory_id>")
+@require_roles("admin", "waiter")
+def update_inventory(inventory_id):
+    try:
+        payload = request.get_json(force=True)
+        
+        # Check if this is a restock operation (old endpoint behavior)
+        if "staff_id" in payload and "quantity" in payload and len(payload) == 2:
+            quantity = float(payload.get("quantity", 0))
+            staff_id = payload.get("staff_id")
+            if quantity <= 0 or not staff_id:
+                return json_response({"error": "quantity and staff_id are required"}, 400)
+
+            with session_scope() as session:
+                item = session.get(Inventory, inventory_id)
+                staff = session.get(Staff, staff_id)
+                if not item or not staff:
+                    return json_response({"error": "Inventory item or staff not found"}, 404)
+                item.quantity = float(item.quantity) + quantity
+                item.last_restocked = datetime.utcnow()
+                session.add(
+                    InventoryLog(
+                        inventory_id=inventory_id,
+                        change_amount=quantity,
+                        change_type="restock",
+                        staff_id=staff_id,
+                    )
+                )
+                session.flush()
+                return json_response(
+                    {
+                        "data": {
+                            "inventory_id": item.inventory_id,
+                            "quantity": float(item.quantity),
+                            "stock_status": _stock_status(float(item.quantity), float(item.min_threshold)),
+                        }
+                    }
+                )
+        else:
+            # General update
+            with session_scope() as session:
+                item = session.get(Inventory, inventory_id)
+                if not item:
+                    return json_response({"error": "Inventory item not found"}, 404)
+                
+                for key, value in payload.items():
+                    if key in ["name", "category", "quantity", "unit", "min_threshold", "cost_per_unit", "supplier_id"]:
+                        if key in ["quantity", "min_threshold", "cost_per_unit"]:
+                            value = float(value)
+                        setattr(item, key, value)
+                
+                session.flush()
+                return json_response(
+                    {
+                        "data": {
+                            "inventory_id": item.inventory_id,
+                            "name": item.name,
+                            "quantity": float(item.quantity),
+                            "stock_status": _stock_status(float(item.quantity), float(item.min_threshold)),
+                        }
+                    }
+                )
+    except Exception as exc:
+        return json_response({"error": str(exc)}, 500)
+
+
+@inventory_bp.delete("/api/inventory/<int:inventory_id>")
+@require_roles("admin")
+def delete_inventory(inventory_id):
+    try:
+        with session_scope() as session:
+            item = session.get(Inventory, inventory_id)
+            if not item:
+                return json_response({"error": "Inventory item not found"}, 404)
+            session.delete(item)
+            session.flush()
+            return json_response({"data": {"deleted": inventory_id}})
+    except Exception as exc:
+        return json_response({"error": str(exc)}, 500)

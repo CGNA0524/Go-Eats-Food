@@ -4,12 +4,21 @@ import { statusChip } from './components/card.js';
 export function renderTablesSection(state) {
   const turns = tableTurnover(state.orders);
   const selected = state.tables.find((table) => table.table_id === state.selectedTableId) || state.tables[0];
+  
+  // Group tables by section (A, B, C)
+  const sections = {};
+  state.tables.forEach(table => {
+    const section = table.location ? table.location.charAt(0) : 'A';
+    if (!sections[section]) sections[section] = [];
+    sections[section].push(table);
+  });
+
   return `
     <div class="section-stack">
       <div class="section-header">
         <div>
           <h2 class="section-title">Table Management</h2>
-          <div class="section-kicker">Five-by-three floor plan with occupancy, reservation and billing context.</div>
+          <div class="section-kicker">View floor plan, manage table status and process reservations.</div>
         </div>
       </div>
 
@@ -18,48 +27,83 @@ export function renderTablesSection(state) {
           <div class="section-header">
             <div>
               <h3 class="section-title">Floor Plan</h3>
-              <div class="section-kicker">Tap a table to inspect the current order and bill.</div>
+              <div class="section-kicker">Click a table to view details, change status or process bills.</div>
             </div>
           </div>
-          <div class="table-grid">
-            ${state.tables
-              .map(
-                (table) => `
-                  <div class="table-cell ${table.status}" data-action="select-table" data-table-id="${table.table_id}">
-                    <div class="row-top">
-                      <strong>Table ${table.table_id}</strong>
-                      ${statusChip(table.status, tableTone(table.status))}
+          <div class="floor-plan">
+            ${Object.keys(sections).sort().map(section => `
+              <div class="floor-section">
+                <div class="section-label">Section ${section}</div>
+                <div class="table-row">
+                  ${sections[section].map(table => `
+                    <div class="table-cell ${table.status}" data-action="select-table" data-table-id="${table.table_id}">
+                      <div class="table-header">
+                        <strong>Table ${table.table_id}</strong>
+                        <span class="capacity-badge">${table.capacity} seats</span>
+                      </div>
+                      <div class="status-indicator ${table.status}">
+                        ${table.status === 'available' ? 'Available' : table.status === 'occupied' ? 'Occupied' : 'Reserved'}
+                      </div>
+                      ${table.current_order ? `<div class="order-note">Order #${table.current_order}</div>` : '<div class="order-note muted">No active order</div>'}
+                      ${table.running_bill_total > 0 ? `<div class="bill-preview">₹${Number(table.running_bill_total).toFixed(0)}</div>` : ''}
                     </div>
-                    <div class="card-subtitle">Seats ${table.capacity} · ${table.location || 'Floor'}</div>
-                    <div class="card-note">${table.item_summary || 'No active order'}</div>
-                  </div>
-                `,
-              )
-              .join('')}
+                  `).join('')}
+                </div>
+              </div>
+            `).join('')}
           </div>
         </div>
 
         <div class="panel-card">
           <div class="section-header">
             <div>
-              <h3 class="section-title">Turnover</h3>
-              <div class="section-kicker">Per-table turns today, derived from current orders.</div>
+              <h3 class="section-title">Table Turnover</h3>
+              <div class="section-kicker">Orders per table today.</div>
             </div>
           </div>
-          ${renderBarChart(turns, { height: 180 })}
+          ${renderBarChart(turns, { height: 200 })}
         </div>
       </div>
 
-      <div class="panel-card">
-        <div class="section-header">
-          <div>
-            <h3 class="section-title">Table Actions</h3>
-            <div class="section-kicker">Reserve, merge or mark availability in one place.</div>
+      <div class="grid-two">
+        <div class="panel-card">
+          <div class="section-header">
+            <div>
+              <h3 class="section-title">Summary</h3>
+              <div class="section-kicker">Quick overview of table status.</div>
+            </div>
+          </div>
+          <div class="summary-grid">
+            <div class="summary-item">
+              <span class="summary-label">Available</span>
+              <span class="summary-value">${state.tables.filter(t => t.status === 'available').length}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Occupied</span>
+              <span class="summary-value">${state.tables.filter(t => t.status === 'occupied').length}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Reserved</span>
+              <span class="summary-value">${state.tables.filter(t => t.status === 'reserved').length}</span>
+            </div>
+            <div class="summary-item">
+              <span class="summary-label">Total Revenue</span>
+              <span class="summary-value">₹${state.tables.reduce((sum, t) => sum + (t.running_bill_total || 0), 0).toFixed(0)}</span>
+            </div>
           </div>
         </div>
-        <div class="toolbar">
-          <button class="button secondary" data-action="open-reservation">Reserve a table</button>
-          <button class="button ghost" data-action="merge-tables">Merge tables</button>
+
+        <div class="panel-card">
+          <div class="section-header">
+            <div>
+              <h3 class="section-title">Actions</h3>
+              <div class="section-kicker">Manage reservations and table operations.</div>
+            </div>
+          </div>
+          <div class="toolbar">
+            <button class="button secondary" data-action="open-reservation">Reserve a Table</button>
+            <button class="button ghost" data-action="merge-tables">Merge Tables</button>
+          </div>
         </div>
       </div>
     </div>
@@ -76,19 +120,47 @@ export function renderTableDetail(table) {
       <div class="section-header">
         <div>
           <h3 class="section-title">Table ${table.table_id}</h3>
-          <div class="section-kicker">${table.location || 'Floor'} · Seats ${table.capacity}</div>
+          <div class="section-kicker">${table.location || 'Floor'} · Capacity ${table.capacity} guests</div>
         </div>
         ${statusChip(table.status, tableTone(table.status))}
       </div>
-      <div class="detail-list">
-        <div class="detail-row"><span class="muted">Current order</span><strong>${table.current_order || 'None'}</strong></div>
-        <div class="detail-row"><span class="muted">Guests</span><strong>${table.guests_count || '—'}</strong></div>
-        <div class="detail-row"><span class="muted">Running total</span><strong>₹${Number(table.running_bill_total || 0).toFixed(2)}</strong></div>
-        <div class="detail-row"><span class="muted">Time occupied</span><strong>${table.time_occupied_minutes ?? '—'} min</strong></div>
+      
+      <div class="panel-card">
+        <div class="card-title">Current Status</div>
+        <div class="detail-list">
+          <div class="detail-row">
+            <span class="muted">Table Status</span>
+            <strong class="status-${table.status}">${table.status.charAt(0).toUpperCase() + table.status.slice(1)}</strong>
+          </div>
+          <div class="detail-row">
+            <span class="muted">Active Order</span>
+            <strong>${table.current_order ? `#${table.current_order}` : 'None'}</strong>
+          </div>
+          <div class="detail-row">
+            <span class="muted">Guests</span>
+            <strong>${table.guests_count || '—'}</strong>
+          </div>
+          <div class="detail-row">
+            <span class="muted">Running Total</span>
+            <strong>₹${Number(table.running_bill_total || 0).toFixed(2)}</strong>
+          </div>
+          <div class="detail-row">
+            <span class="muted">Time Occupied</span>
+            <strong>${table.time_occupied_minutes !== null && table.time_occupied_minutes !== undefined ? table.time_occupied_minutes + ' min' : '—'}</strong>
+          </div>
+        </div>
       </div>
-      <div class="panel-card" style="padding:12px;">
-        <div class="card-title">Order Summary</div>
-        <div class="card-note">${table.item_summary || 'No active items on this table.'}</div>
+
+      ${table.item_summary ? `
+        <div class="panel-card">
+          <div class="card-title">Order Items</div>
+          <div class="card-note">${table.item_summary}</div>
+        </div>
+      ` : ''}
+
+      <div class="toolbar">
+        <button class="button secondary" data-action="mark-table-available" data-table-id="${table.table_id}">Mark Available</button>
+        <button class="button secondary" data-action="mark-table-occupied" data-table-id="${table.table_id}">Mark Occupied</button>
       </div>
     </div>
   `;

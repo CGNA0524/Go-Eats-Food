@@ -8,6 +8,7 @@ from flask_cors import CORS
 from bootstrap import seed_if_empty
 from db import Base, DATABASE_URL, engine, session_scope
 from routes.admin import admin_bp
+from routes.auth import auth_bp
 from routes.catalog import catalog_bp
 from routes.billing import billing_bp
 from routes.inventory import inventory_bp
@@ -32,6 +33,7 @@ def create_app():
     app.register_blueprint(tables_bp)
     app.register_blueprint(catalog_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(auth_bp)
 
     @app.get("/api/health")
     def health():
@@ -44,6 +46,10 @@ def create_app():
 
     @app.get("/")
     def index():
+        return send_from_directory(FRONTEND_DIR, "login.html")
+
+    @app.get("/dashboard.html")
+    def dashboard():
         return send_from_directory(FRONTEND_DIR, "index.html")
 
     @app.get("/<path:filename>")
